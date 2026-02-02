@@ -124,7 +124,7 @@ func main() {
 	// Start server
 	addr := fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
 	log.Printf("🚀 Server starting on %s...", addr)
-	if err := http.ListenAndServe(":"+cfg.Server.Port, nil); err != nil {
+	if err := http.ListenAndServe(addr, nil); err != nil {
 		log.Fatalf("❌ HTTP server failed: %v", err)
 	}
 
