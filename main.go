@@ -29,9 +29,14 @@ func main() {
 	}
 	defer db.Close()
 
-	// Run database migrations
-	if err := migrations.RunMigrations(db); err != nil {
-		log.Fatalf("Error running migrations: %v", err)
+	// Run database migrations if enabled
+	if cfg.Database.AutoMigrate {
+		log.Println("Running database migrations...")
+		if err := migrations.RunMigrations(db); err != nil {
+			log.Fatalf("Error running migrations: %v", err)
+		}
+	} else {
+		log.Println("Auto migration disabled, skipping...")
 	}
 
 	// initialize repositories

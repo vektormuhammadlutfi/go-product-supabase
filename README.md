@@ -181,14 +181,15 @@ git push origin main
 
    Add these environment variables in Render:
    
-   | Key | Value |
-   |-----|-------|
-   | `SERVER_PORT` | `10000` (Render's default) |
-   | `SERVER_HOST` | `0.0.0.0` |
-   | `DATABASE_URL` | Your Supabase connection string |
+   | Key | Value | Description |
+   |-----|-------|-------------|
+   | `DATABASE_URL` | Your Supabase connection string | **Required** - PostgreSQL connection string |
+   | `AUTO_MIGRATE` | `false` | **Recommended** - Set to `false` to skip auto-migration on deploy |
 
-   > **Note**: Get your Supabase connection string from:
-   > Supabase Dashboard → Settings → Database → Connection String (URI format)
+   > **Note**: 
+   > - Get your Supabase connection string from: Supabase Dashboard → Settings → Database → Connection String (URI format)
+   > - Render automatically sets `PORT` environment variable (no need to set manually)
+   > - Migration should be run manually in Supabase dashboard or use migration tool
 
 5. **Deploy**
    - Click **"Create Web Service"**
