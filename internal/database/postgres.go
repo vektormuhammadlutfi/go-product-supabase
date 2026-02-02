@@ -51,10 +51,12 @@ func New(cfg Config) (*DB, error) {
 		return nil, fmt.Errorf("failed to get database instance: %w", err)
 	}
 
-	// Connection pool settings
-	sqlDB.SetMaxIdleConns(10)
-	sqlDB.SetMaxOpenConns(100)
-	sqlDB.SetConnMaxLifetime(time.Hour)
+	// Connection pool settings optimized for Supabase pooler
+	// Keep connections short-lived to avoid prepared statement conflicts
+	sqlDB.SetMaxIdleConns(5)
+	sqlDB.SetMaxOpenConns(20)
+	sqlDB.SetConnMaxLifetime(5 * time.Minute)      // Recycle connections every 5 minutes
+	sqlDB.SetConnMaxIdleTime(2 * time.Minute)      // Close idle connections after 2 minutes
 
 	log.Println("✅ Successfully connected to PostgreSQL (Supabase)")
 

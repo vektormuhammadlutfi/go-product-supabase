@@ -190,6 +190,7 @@ git push origin main
    > - Get your Supabase connection string from: Supabase Dashboard → Settings → Database → Connection String (URI format)
    > - Render automatically sets `PORT` environment variable (no need to set manually)
    > - Migration should be run manually in Supabase dashboard or use migration tool
+   > - The app is configured to work with Supabase connection pooler (handles prepared statement caching automatically)
 
 5. **Deploy**
    - Click **"Create Web Service"**
