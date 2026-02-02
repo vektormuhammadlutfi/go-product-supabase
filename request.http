@@ -1,0 +1,65 @@
+### Get the health of the cluster
+GET http://localhost:6000/health
+
+### Create a new category
+POST http://localhost:6000/api/categories
+Content-Type: application/json
+
+{
+  "name": "Elektronik",
+  "description": "Perangkat elektronik seperti ponsel, laptop, dan televisi."
+}
+
+### Get all categories
+GET http://localhost:6000/api/categories
+
+### Get single category by ID
+GET http://localhost:6000/api/categories/1
+
+### Update a category by ID
+PUT http://localhost:6000/api/categories/1
+
+{
+  "name": "Elektronik Updated",
+  "description": "Perangkat elektronik terbaru seperti ponsel, laptop, dan televisi."
+}
+
+### Delete a category by ID
+DELETE http://localhost:6000/api/categories/1
+ 
+### Create a new product
+POST http://localhost:6000/api/products
+Content-Type: application/json
+
+{
+  "name": "iPhone 17 Pro",
+  "description": "Smartphone premium dari Apple",
+  "price": 15999000,
+  "stock": 50,
+  "category_id": 1
+}
+
+### Get all products (with category name)
+GET http://localhost:6000/api/products
+
+### Get single product by ID
+GET http://localhost:6000/api/products/1
+
+### Get products by category ID
+GET http://localhost:6000/api/products?category_id=1
+
+### Update a product by ID
+PUT http://localhost:6000/api/products/1
+Content-Type: application/json
+
+{
+  "name": "iPhone 17 Pro Max",
+  "description": "Smartphone premium terbaru dari Apple",
+  "price": 18999000,
+  "stock": 30,
+  "category_id": 1
+}
+
+### Delete a product by ID
+DELETE http://localhost:6000/api/products/1
+
