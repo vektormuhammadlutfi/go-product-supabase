@@ -1,22 +1,26 @@
-# Go Product & Category API
+# Go Product API — Supabase
 
-A RESTful API service built with Go for managing products and categories, using PostgreSQL (Supabase) as the database and GORM as the ORM.
+A RESTful API service built with Go for managing products, categories, and transactions, using PostgreSQL (Supabase) as the database and GORM as the ORM.
+
+**Live Demo**: [https://go-product-supabase.onrender.com/health](https://go-product-supabase.onrender.com/health)
 
 ## 🚀 Features
 
-- **Product Management**: CRUD operations for products
-- **Category Management**: CRUD operations for categories
-- **Relationship**: Products belong to categories (foreign key constraint)
-- **Database**: PostgreSQL via Supabase
-- **Auto Migration**: Database tables are created automatically
+- **Category Management**: Full CRUD operations for product categories
+- **Product Management**: Full CRUD operations for products with category relationship
+- **Checkout / Transactions**: Process checkout with stock validation and automatic stock deduction
+- **Sales Reports**: Today's sales summary and date-range sales reports with best-selling product info
+- **Database**: PostgreSQL via Supabase (with PgBouncer connection pooler support)
+- **Auto Migration**: Database tables are created automatically on startup
 - **Health Check**: Endpoint to monitor service status
-- **Clean Architecture**: Repository pattern with separation of concerns
+- **Clean Architecture**: Repository → Service → Handler pattern with separation of concerns
 
 ## 📋 Tech Stack
 
-- **Language**: Go 1.24.0
+- **Language**: Go 1.24
 - **Database**: PostgreSQL (Supabase)
 - **ORM**: GORM
+- **DB Driver**: pgx/v5 (with simple protocol for PgBouncer compatibility)
 - **Configuration**: Viper
 - **Development**: Air (live-reload)
 
@@ -25,23 +29,26 @@ A RESTful API service built with Go for managing products and categories, using 
 ```
 go-product-supabase/
 ├── internal/
-│   ├── config/          # Configuration management
-│   ├── database/        # Database connection & migration
-│   ├── handlers/        # HTTP handlers
-│   ├── models/          # Data models
+│   ├── config/          # Configuration management (Viper)
+│   ├── database/        # Database connection, migration & health check
+│   ├── handlers/        # HTTP handlers (category, product, transaction)
+│   ├── models/          # Data models (Category, Product, Transaction, TransactionDetail)
 │   ├── repository/      # Data access layer
 │   └── services/        # Business logic layer
-├── migrations/          # Database migrations
-├── .air.toml           # Air configuration for live-reload
-├── .env                # Environment variables
-├── go.mod              # Go dependencies
-└── main.go             # Application entry point
+├── migrations/          # Auto-migration runner
+├── .air.toml            # Air configuration for live-reload
+├── .env                 # Environment variables (not committed)
+├── .env.example         # Environment variables template
+├── request.http         # HTTP request examples (localhost)
+├── request-production.http # HTTP request examples (production)
+├── go.mod               # Go dependencies
+└── main.go              # Application entry point
 ```
 
 ## 🔧 Prerequisites
 
-- Go 1.24.0 or higher
-- PostgreSQL database (Supabase account)
+- Go 1.24 or higher
+- PostgreSQL database (Supabase account recommended)
 - Git
 
 ## ⚙️ Installation
@@ -76,8 +83,8 @@ DATABASE_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[region].poole
 ```
 
 Replace with your Supabase connection string:
-- Get it from: Supabase Dashboard → Project Settings → Database → Connection String
-- Choose: URI → Direct connection
+- Get it from: **Supabase Dashboard → Project Settings → Database → Connection String**
+- Use **Transaction Mode** (port `6543`) — the app handles PgBouncer compatibility automatically
 
 ## 🏃 Running Locally
 
@@ -101,44 +108,80 @@ GET /health
 ```
 
 ### Categories
-```http
-GET    /api/categories       # Get all categories
-POST   /api/categories       # Create category
-GET    /api/categories/{id}  # Get category by ID
-PUT    /api/categories/{id}  # Update category
-DELETE /api/categories/{id}  # Delete category
-```
+| Method   | Endpoint               | Description           |
+|----------|------------------------|-----------------------|
+| `GET`    | `/api/categories`      | Get all categories    |
+| `POST`   | `/api/categories`      | Create a category     |
+| `GET`    | `/api/categories/{id}` | Get category by ID    |
+| `PUT`    | `/api/categories/{id}` | Update a category     |
+| `DELETE` | `/api/categories/{id}` | Delete a category     |
 
 ### Products
-```http
-GET    /api/products                      # Get all products
-GET    /api/products?category_id={id}     # Get products by category
-POST   /api/products                      # Create product
-GET    /api/products/{id}                 # Get product by ID
-PUT    /api/products/{id}                 # Update product
-DELETE /api/products/{id}                 # Delete product
-```
+| Method   | Endpoint                              | Description               |
+|----------|---------------------------------------|---------------------------|
+| `GET`    | `/api/products`                       | Get all products          |
+| `GET`    | `/api/products?name={name}`           | Filter products by name   |
+| `GET`    | `/api/products?category_id={id}`      | Filter products by category |
+| `POST`   | `/api/products`                       | Create a product          |
+| `GET`    | `/api/products/{id}`                  | Get product by ID         |
+| `PUT`    | `/api/products/{id}`                  | Update a product          |
+| `DELETE` | `/api/products/{id}`                  | Delete a product          |
+
+### Transactions & Checkout
+| Method | Endpoint             | Description                         |
+|--------|---------------------|-----------------------------------------|
+| `POST` | `/api/checkout`     | Process a checkout (creates transaction, deducts stock) |
+
+### Sales Reports
+| Method | Endpoint                                              | Description                    |
+|--------|-------------------------------------------------------|--------------------------------|
+| `GET`  | `/api/report/today`                                   | Today's sales summary          |
+| `GET`  | `/api/report?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD` | Sales summary by date range |
 
 ## 📝 Request Examples
 
 ### Create Category
-```json
-POST /api/categories
-{
-  "name": "Electronics",
-  "description": "Electronic devices and accessories"
-}
+```bash
+curl -X POST http://localhost:6000/api/categories \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Elektronik",
+    "description": "Perangkat elektronik seperti ponsel, laptop, dan televisi."
+  }'
 ```
 
 ### Create Product
-```json
-POST /api/products
-{
-  "name": "Laptop",
-  "price": 999.99,
-  "stock": 10,
-  "category_id": 1
-}
+```bash
+curl -X POST http://localhost:6000/api/products \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "iPhone 17 Pro",
+    "description": "Smartphone premium dari Apple",
+    "price": 15999000,
+    "stock": 50,
+    "category_id": 1
+  }'
+```
+
+### Checkout
+```bash
+curl -X POST http://localhost:6000/api/checkout \
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [
+      { "product_id": 1, "quantity": 2 }
+    ]
+  }'
+```
+
+### Sales Report (Today)
+```bash
+curl http://localhost:6000/api/report/today
+```
+
+### Sales Report (Date Range)
+```bash
+curl "http://localhost:6000/api/report?start_date=2026-01-01&end_date=2026-02-09"
 ```
 
 ## 🌐 Deployment on Render.com
@@ -198,8 +241,8 @@ git push origin main
    - Wait for deployment to complete (~2-5 minutes)
 
 6. **Access Your API**
-   - Your API will be available at: `https://go-product-api.onrender.com`
-   - Health check: `https://go-product-api.onrender.com/health`
+   - Your API will be available at: `https://<your-service-name>.onrender.com`
+   - Health check: `https://<your-service-name>.onrender.com/health`
 
 ### Render Configuration Tips
 
@@ -217,47 +260,46 @@ git push origin main
 
 ## 🗄️ Database Schema
 
-### Categories Table
-```sql
-CREATE TABLE categories (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL UNIQUE,
-  description TEXT
-);
-```
+### Categories
+| Column        | Type          | Constraints          |
+|---------------|---------------|----------------------|
+| `id`          | `SERIAL`      | PRIMARY KEY          |
+| `name`        | `VARCHAR(100)` | NOT NULL, UNIQUE    |
+| `description` | `TEXT`        |                      |
 
-### Products Table
-```sql
-CREATE TABLE products (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(200) NOT NULL,
-  price DECIMAL(10,2) NOT NULL,
-  stock INTEGER DEFAULT 0,
-  category_id INTEGER NOT NULL,
-  FOREIGN KEY (category_id) REFERENCES categories(id)
-);
-```
+### Products
+| Column        | Type           | Constraints                        |
+|---------------|----------------|------------------------------------|
+| `id`          | `SERIAL`       | PRIMARY KEY                        |
+| `name`        | `VARCHAR(200)` | NOT NULL                           |
+| `price`       | `DECIMAL(10,2)` | NOT NULL                          |
+| `stock`       | `INTEGER`      | DEFAULT 0                          |
+| `category_id` | `INTEGER`      | NOT NULL, FK → categories(id)      |
+
+### Transactions
+| Column         | Type            | Constraints  |
+|----------------|-----------------|--------------|
+| `id`           | `BIGSERIAL`     | PRIMARY KEY  |
+| `total_amount` | `DECIMAL(10,2)` | NOT NULL     |
+| `created_at`   | `TIMESTAMPTZ`   | AUTO         |
+
+### Transaction Details
+| Column           | Type            | Constraints                              |
+|------------------|-----------------|------------------------------------------|
+| `id`             | `BIGSERIAL`     | PRIMARY KEY                              |
+| `transaction_id` | `BIGINT`        | NOT NULL, FK → transactions(id) ON DELETE CASCADE |
+| `product_id`     | `BIGINT`        | NOT NULL, FK → products(id)              |
+| `quantity`        | `BIGINT`       | NOT NULL                                 |
+| `subtotal`       | `DECIMAL(10,2)` | NOT NULL                                |
 
 ## 🧪 Testing
 
-Use the included `request.http` file with REST Client extension in VS Code, or use tools like:
-- Postman
-- Insomnia
-- cURL
+Use the included HTTP request files with the [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) extension in VS Code:
 
-Example with cURL:
-```bash
-# Health check
-curl http://localhost:6000/health
+- `request.http` — local endpoints (`http://localhost:6000`)
+- `request-production.http` — production endpoints (`https://go-product-supabase.onrender.com`)
 
-# Get all categories
-curl http://localhost:6000/api/categories
-
-# Create category
-curl -X POST http://localhost:6000/api/categories \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Electronics","description":"Electronic items"}'
-```
+Or use tools like **Postman**, **Insomnia**, or **cURL**.
 
 ## 🤝 Contributing
 
@@ -273,7 +315,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## 👤 Author
 
-Your Name - [Your GitHub Profile](https://github.com/yourusername)
+Vektor Muhammad Lutfi — [GitHub](https://github.com/vektormuhammadlutfi)
 
 ## 🙏 Acknowledgments
 
