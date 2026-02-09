@@ -10,7 +10,7 @@ import (
 
 type ProductService interface {
 	CreateProduct(name, description string, price float64, stock int, categoryID uint) (*models.Product, error)
-	GetAllProducts() ([]models.ProductResponse, error)
+	GetAllProducts(name string) ([]models.ProductResponse, error)
 	GetProductByID(id uint) (*models.ProductResponse, error)
 	GetProductsByCategoryID(categoryID uint) ([]models.ProductResponse, error)
 	UpdateProduct(id uint, name, description string, price float64, stock int, categoryID uint) (*models.Product, error)
@@ -67,9 +67,16 @@ func (s *productService) CreateProduct(name, description string, price float64, 
 	return product, nil
 }
 
-func (s *productService) GetAllProducts() ([]models.ProductResponse, error) {
+func (s *productService) GetAllProducts(name string) ([]models.ProductResponse, error) {
+	var products []models.Product
+	var err error
 
-	products, err := s.productRepo.FindAll()
+	if name != "" {
+		products, err = s.productRepo.FindByName(name)
+	} else {
+		products, err = s.productRepo.FindAll()
+	}
+
 	if err != nil {
 		return nil, err
 	}

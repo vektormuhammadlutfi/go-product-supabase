@@ -12,8 +12,10 @@ func RunMigrations(db *database.DB) error {
 
 	// List of models to migrate
 	models := []interface{}{
-		&models.Category{}, // Ensure Category is migrated before Product
-		&models.Product{},  // Has a foreign key to Category
+		&models.Category{},          // Ensure Category is migrated before Product
+		&models.Product{},           // Has a foreign key to Category
+		&models.Transaction{},       // Transaction table
+		&models.TransactionDetail{}, // Has foreign keys to Transaction and Product
 	}
 
 	if err := migrator.AutoMigrate(models...); err != nil {

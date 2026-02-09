@@ -15,6 +15,7 @@ type ProductRepository interface {
 	FindAll() ([]models.Product, error)
 	FindByID(id uint) (*models.Product, error)
 	FindByCategoryID(categoryID uint) ([]models.Product, error)
+	FindByName(name string) ([]models.Product, error)
 }
 
 type productRepository struct {
@@ -55,6 +56,12 @@ func (r *productRepository) FindByID(id uint) (*models.Product, error) {
 func (r *productRepository) FindByCategoryID(categoryID uint) ([]models.Product, error) {
 	var products []models.Product
 	err := r.db.Preload("Category").Where("category_id = ?", categoryID).Find(&products).Error
+	return products, err
+}
+
+func (r *productRepository) FindByName(name string) ([]models.Product, error) {
+	var products []models.Product
+	err := r.db.Preload("Category").Where("name ILIKE ?", "%"+name+"%").Find(&products).Error
 	return products, err
 }
 

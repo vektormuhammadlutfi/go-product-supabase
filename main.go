@@ -29,27 +29,25 @@ func main() {
 	}
 	defer db.Close()
 
-	// Run database migrations if enabled
-	if cfg.Database.AutoMigrate {
-		log.Println("Running database migrations...")
-		if err := migrations.RunMigrations(db); err != nil {
-			log.Fatalf("Error running migrations: %v", err)
-		}
-	} else {
-		log.Println("Auto migration disabled, skipping...")
+	// Run database migrations
+	if err := migrations.RunMigrations(db); err != nil {
+		log.Fatalf("Error running migrations: %v", err)
 	}
 
 	// initialize repositories
 	categoryRepo := repository.NewCategoryRepository(db.DB)
 	productRepo := repository.NewProductRepository(db.DB)
+	transactionRepo := repository.NewTransactionRepository(db.DB)
 
 	// initialize services
 	categoryService := services.NewCategoryService(categoryRepo)
 	productService := services.NewProductService(productRepo, categoryRepo)
+	transactionService := services.NewTransactionService(db.DB, transactionRepo, productRepo)
 
 	// initialize HTTP Handlers
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
 	productHandler := handlers.NewProductHandler(productService)
+	transactionHandler := handlers.NewTransactionHandler(transactionService)
 
 	// setup routes
 	// health check endpoint
@@ -126,10 +124,39 @@ func main() {
 		}
 	})
 
+	// Transaction routes
+	http.HandleFunc("/api/checkout", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			transactionHandler.Checkout(w, r)
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	})
+
+	// Report routes
+	http.HandleFunc("/api/report/today", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			transactionHandler.GetTodaySalesSummary(w, r)
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	})
+
+	http.HandleFunc("/api/report", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			transactionHandler.GetSalesSummaryByDateRange(w, r)
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	})
+
 	// Start server
 	addr := fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
 	log.Printf("🚀 Server starting on %s...", addr)
-	if err := http.ListenAndServe(addr, nil); err != nil {
+	if err := http.ListenAndServe(":"+cfg.Server.Port, nil); err != nil {
 		log.Fatalf("❌ HTTP server failed: %v", err)
 	}
 

@@ -42,6 +42,9 @@ Content-Type: application/json
 ### Get all products (with category name)
 GET http://localhost:6000/api/products
 
+### Get products by name (filter)
+GET http://localhost:6000/api/products?name=iPhone
+
 ### Get single product by ID
 GET http://localhost:6000/api/products/1
 
@@ -53,9 +56,9 @@ PUT http://localhost:6000/api/products/1
 Content-Type: application/json
 
 {
-  "name": "iPhone 17 Pro Max",
+  "name": "iPhone 13 Pro Max",
   "description": "Smartphone premium terbaru dari Apple",
-  "price": 18999000,
+  "price": 28999000,
   "stock": 30,
   "category_id": 1
 }
@@ -63,3 +66,21 @@ Content-Type: application/json
 ### Delete a product by ID
 DELETE http://localhost:6000/api/products/1
 
+### Checkout transaction
+POST http://localhost:6000/api/checkout
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "product_id": 1,
+      "quantity": 2
+    }    
+  ]
+}
+
+### Get today's sales summary
+GET http://localhost:6000/api/report/today
+
+### Get sales summary by date range
+GET http://localhost:6000/api/report?start_date=2026-01-01&end_date=2026-02-09

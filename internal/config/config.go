@@ -18,8 +18,7 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
-	DSN         string
-	AutoMigrate bool
+	DSN string
 }
 
 func Load() (*Config, error) {
@@ -33,35 +32,13 @@ func Load() (*Config, error) {
 		log.Printf("warning: %v", err)
 	}
 
-	// Get port from PORT (Render) or SERVER_PORT (local)
-	port := viper.GetString("PORT")
-	if port == "" {
-		port = viper.GetString("SERVER_PORT")
-	}
-	if port == "" {
-		port = "6000" // default port
-	}
-
-	// Get host from SERVER_HOST or default to 0.0.0.0
-	host := viper.GetString("SERVER_HOST")
-	if host == "" {
-		host = "0.0.0.0"
-	}
-
-	// Auto migrate default to true unless explicitly set to false
-	autoMigrate := true
-	if viper.GetString("AUTO_MIGRATE") == "false" {
-		autoMigrate = false
-	}
-
 	config := &Config{
 		Server: ServerConfig{
-			Port: port,
-			Host: host,
+			Port: viper.GetString("SERVER_PORT"),
+			Host: viper.GetString("SERVER_HOST"),
 		},
 		Database: DatabaseConfig{
-			DSN:         viper.GetString("DATABASE_URL"),
-			AutoMigrate: autoMigrate,
+			DSN: viper.GetString("DATABASE_URL"),
 		},
 	}
 

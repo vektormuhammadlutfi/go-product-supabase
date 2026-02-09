@@ -53,7 +53,9 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) {
-	products, err := h.service.GetAllProducts()
+	name := r.URL.Query().Get("name")
+
+	products, err := h.service.GetAllProducts(name)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
