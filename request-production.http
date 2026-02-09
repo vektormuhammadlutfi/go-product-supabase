@@ -1,0 +1,86 @@
+### Get the health of the cluster
+GET https://go-product-supabase.onrender.com/health
+
+### Create a new category
+POST https://go-product-supabase.onrender.com/api/categories
+Content-Type: application/json
+
+{
+  "name": "Elektronik",
+  "description": "Perangkat elektronik seperti ponsel, laptop, dan televisi."
+}
+
+### Get all categories
+GET https://go-product-supabase.onrender.com/api/categories
+
+### Get single category by ID
+GET https://go-product-supabase.onrender.com/api/categories/1
+
+### Update a category by ID
+PUT https://go-product-supabase.onrender.com/api/categories/1
+
+{
+  "name": "Elektronik Updated",
+  "description": "Perangkat elektronik terbaru seperti ponsel, laptop, dan televisi."
+}
+
+### Delete a category by ID
+DELETE https://go-product-supabase.onrender.com/api/categories/1
+ 
+### Create a new product
+POST https://go-product-supabase.onrender.com/api/products
+Content-Type: application/json
+
+{
+  "name": "iPhone 17 Pro",
+  "description": "Smartphone premium dari Apple",
+  "price": 15999000,
+  "stock": 50,
+  "category_id": 1
+}
+
+### Get all products (with category name)
+GET https://go-product-supabase.onrender.com/api/products
+
+### Get products by name (filter)
+GET https://go-product-supabase.onrender.com/api/products?name=iPhone
+
+### Get single product by ID
+GET https://go-product-supabase.onrender.com/api/products/1
+
+### Get products by category ID
+GET https://go-product-supabase.onrender.com/api/products?category_id=1
+
+### Update a product by ID
+PUT https://go-product-supabase.onrender.com/api/products/1
+Content-Type: application/json
+
+{
+  "name": "iPhone 13 Pro Max",
+  "description": "Smartphone premium terbaru dari Apple",
+  "price": 28999000,
+  "stock": 30,
+  "category_id": 1
+}
+
+### Delete a product by ID
+DELETE https://go-product-supabase.onrender.com/api/products/1
+
+### Checkout transaction
+POST https://go-product-supabase.onrender.com/api/checkout
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "product_id": 1,
+      "quantity": 2
+    }    
+  ]
+}
+
+### Get today's sales summary
+GET https://go-product-supabase.onrender.com/api/report/today
+
+### Get sales summary by date range
+GET https://go-product-supabase.onrender.com/api/report?start_date=2026-01-01&end_date=2026-02-09
