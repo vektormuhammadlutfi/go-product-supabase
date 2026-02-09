@@ -3,9 +3,10 @@ package database
 import (
 	"fmt"
 	"log"
-	"net/url"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/stdlib"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -22,17 +23,21 @@ type Config struct {
 func New(cfg Config) (*DB, error) {
 	dsn := cfg.DSN
 
-	// Append prefer_simple_protocol to DSN to avoid prepared-statement cache issues
-	if u, err := url.Parse(dsn); err == nil {
-		q := u.Query()
-		if q.Get("prefer_simple_protocol") == "" {
-			q.Set("prefer_simple_protocol", "true")
-			u.RawQuery = q.Encode()
-			dsn = u.String()
-		}
+	// Parse the DSN and configure pgx to use simple protocol
+	// This avoids "prepared statement already exists" errors with PgBouncer/Supabase pooler
+	pgxConfig, err := pgx.ParseConfig(dsn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse DSN: %w", err)
 	}
+	pgxConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+	// Register the pgx config and get a connection string for sql.Open
+	sqlDSN := stdlib.RegisterConnConfig(pgxConfig)
+
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		DriverName: "pgx",
+		DSN:        sqlDSN,
+	}), &gorm.Config{
 		// Disable PrepareStmt to avoid prepared-statement caching conflicts
 		// (helpful when using connection poolers like pgbouncer/supabase pooler)
 		PrepareStmt: false,
